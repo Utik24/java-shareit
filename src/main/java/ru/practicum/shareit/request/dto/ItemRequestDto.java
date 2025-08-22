@@ -1,7 +1,21 @@
 package ru.practicum.shareit.request.dto;
 
-/**
- * TODO Sprint add-item-requests.
- */
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ItemRequestDto {
+    private Long id;
+
+    @NotBlank(message = "Описание запроса обязательно")
+    private String description;
+
+    private Long requestorId;
+    private LocalDateTime created;
 }
