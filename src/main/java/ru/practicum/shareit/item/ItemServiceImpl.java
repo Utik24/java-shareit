@@ -25,8 +25,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto create(Long ownerId, ItemDto dto) {
         User owner = users.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Владелец " + ownerId + " не найден"));
-        Item item = ItemMapper.fromDto(dto);
-        item.setOwner(owner);
+        Item item = ItemMapper.fromDto(dto, owner);
+
         return ItemMapper.toDto(items.save(item));
     }
 

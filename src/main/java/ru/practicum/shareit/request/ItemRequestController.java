@@ -3,6 +3,7 @@ package ru.practicum.shareit.request;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.interfaces.HasUserHeader;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import java.util.List;
@@ -10,9 +11,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/requests")
 @RequiredArgsConstructor
-public class ItemRequestController {
+public class ItemRequestController implements HasUserHeader {
 
-    private static final String USER_HEADER = "X-Sharer-User-Id";
+
     private final ItemRequestService service;
 
     @PostMapping
