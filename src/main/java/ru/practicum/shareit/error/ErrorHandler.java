@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.error.dto.ErrorResponse;
 
 import java.time.Instant;
-import java.util.Map;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -22,6 +21,7 @@ public class ErrorHandler {
                         ex.getMessage()
                 ));
     }
+
     @ExceptionHandler({ValidationException.class, DuplicateEmailException.class})
     public ResponseEntity<ErrorResponse> handleValidation(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
