@@ -4,14 +4,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.interfaces.HasUserHeader;
 
 import java.util.List;
+
+import static ru.practicum.shareit.HasUserHeader.USER_HEADER;
 
 @RestController
 @RequestMapping("/bookings")
 @RequiredArgsConstructor
-public class BookingController implements HasUserHeader {
+public class BookingController  {
 
     private final BookingService service;
 

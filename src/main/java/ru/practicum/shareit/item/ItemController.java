@@ -4,16 +4,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.interfaces.HasUserHeader;
+import ru.practicum.shareit.HasUserHeader;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
+
+import static ru.practicum.shareit.HasUserHeader.USER_HEADER;
 
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Validated
-public class ItemController implements HasUserHeader {
+public class ItemController  {
 
     private final ItemService service;
 
