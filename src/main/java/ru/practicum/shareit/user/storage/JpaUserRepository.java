@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user.storage;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.User;
 
