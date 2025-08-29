@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Profile("db")
 @RequiredArgsConstructor
 public class JpaUserRepository implements UserRepository {
     private final SpringDataUserJpa jpa;

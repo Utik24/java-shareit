@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Profile("db")
 @RequiredArgsConstructor
 public class JpaBookingRepository implements BookingRepository {
 
