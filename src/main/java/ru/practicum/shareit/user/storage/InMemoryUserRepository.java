@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
+@org.springframework.context.annotation.Profile("mem")
 public class InMemoryUserRepository implements UserRepository {
 
     private final Map<Long, User> storage = new ConcurrentHashMap<>();

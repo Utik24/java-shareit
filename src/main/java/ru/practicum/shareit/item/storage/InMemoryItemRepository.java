@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Repository
+@org.springframework.context.annotation.Profile("mem")
 public class InMemoryItemRepository implements ItemRepository {
 
     private final Map<Long, Item> storage = new ConcurrentHashMap<>();
