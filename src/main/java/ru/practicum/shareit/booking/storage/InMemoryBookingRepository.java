@@ -2,8 +2,8 @@ package ru.practicum.shareit.booking.storage;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.*;
