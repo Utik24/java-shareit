@@ -35,6 +35,7 @@ public class BookingDto {
     @Builder
     public static class BookerShortDto {
         private Long id;
+        private String name;
     }
 
     @Getter

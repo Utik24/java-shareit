@@ -36,6 +36,10 @@ public class BookingServiceImpl implements BookingService {
         if (Boolean.FALSE.equals(item.getAvailable())) {
             throw new ValidationException("Вещь недоступна для бронирования");
         }
+        var statusesToCheck = List.of(BookingStatus.APPROVED, BookingStatus.WAITING);
+        if (repo.existsOverlapping(item.getId(), dto.getStart(), dto.getEnd(), statusesToCheck)) {
+            throw new ValidationException("Новые даты пересекаются с существующим бронированием");
+        }
         Booking booking = BookingMapper.fromDto(dto, item, booker);
         booking.setStatus(BookingStatus.WAITING);
         booking = repo.save(booking);
@@ -50,6 +54,22 @@ public class BookingServiceImpl implements BookingService {
         }
         if (booking.getStatus() == BookingStatus.APPROVED && approved) {
             throw new ValidationException("Бронирование уже подтверждено");
+        }
+        if (booking.getStatus() != BookingStatus.WAITING) {
+            throw new ValidationException("Бронирование уже рассмотрено: " + booking.getStatus());
+        }
+
+        if (approved) {
+            if (repo.existsOverlapping(
+                    booking.getItem().getId(),
+                    booking.getStart(),
+                    booking.getEnd(),
+                    java.util.List.of(BookingStatus.APPROVED))) {
+                throw new ValidationException("Нельзя подтвердить: даты пересекаются с одобренной бронью");
+            }
+            booking.setStatus(BookingStatus.APPROVED);
+        } else {
+            booking.setStatus(BookingStatus.REJECTED);
         }
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         repo.update(booking);

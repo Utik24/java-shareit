@@ -10,6 +10,7 @@ import ru.practicum.shareit.error.NotFoundException;
 import ru.practicum.shareit.error.OwnershipException;
 import ru.practicum.shareit.error.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreateDto;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDto.BookingShort;
 import ru.practicum.shareit.item.model.Comment;
@@ -38,10 +39,10 @@ public class ItemServiceImpl implements ItemService {
         User owner = users.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь " + ownerId + " не найден"));
 
-        if (!org.springframework.util.StringUtils.hasText(dto.getName())) {
+        if (!StringUtils.hasText(dto.getName())) {
             throw new ValidationException("Название вещи не может быть пустым");
         }
-        if (!org.springframework.util.StringUtils.hasText(dto.getDescription())) {
+        if (!StringUtils.hasText(dto.getDescription())) {
             throw new ValidationException("Описание вещи не может быть пустым");
         }
         if (dto.getAvailable() == null) {
@@ -53,10 +54,10 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toDto(item);
     }
 
-
     @Override
     public ItemDto update(Long ownerId, Long itemId, ItemDto patch) {
-        Item item = items.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь " + itemId + " не найдена"));
+        Item item = items.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь " + itemId + " не найдена"));
         if (item.getOwner() == null || !item.getOwner().getId().equals(ownerId)) {
             throw new OwnershipException("Редактировать вещь может только владелец");
         }
@@ -69,18 +70,20 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getById(Long requesterId, Long itemId) {
-        Item item = items.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь " + itemId + " не найдена"));
+        Item item = items.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь " + itemId + " не найдена"));
+
         ItemDto dto = ItemMapper.toDto(item);
 
+        dto.setComments(
+                comments.findByItem_IdOrderByCreatedDesc(itemId).stream()
+                        .map(ItemMapper::toCommentDto)
+                        .collect(Collectors.toList())
+        );
 
-        dto.setComments(comments.findByItem_IdOrderByCreatedDesc(itemId).stream()
-                .map(c -> new ItemDto.CommentDto(c.getText(), c.getId(),
-                        c.getAuthor() != null ? c.getAuthor().getName() : null,
-                        c.getCreated() != null ? c.getCreated().toString().substring(0, 19) : null))
-                .collect(Collectors.toList()));
+        if (item.getOwner() != null && item.getOwner().getId() != null
+                && item.getOwner().getId().equals(requesterId)) {
 
-
-        if (item.getOwner() != null && item.getOwner().getId() != null && item.getOwner().getId().equals(requesterId)) {
             LocalDateTime now = LocalDateTime.now();
             var relevant = bookings.findAll().stream()
                     .filter(b -> b.getItem() != null && itemId.equals(b.getItem().getId()))
@@ -95,8 +98,11 @@ public class ItemServiceImpl implements ItemService {
                     .filter(b -> b.getStart().isAfter(now))
                     .min(Comparator.comparing(Booking::getStart))
                     .orElse(null);
-            dto.setLastBooking(last == null ? null : new BookingShort(last.getId(), last.getBooker() != null ? last.getBooker().getId() : null));
-            dto.setNextBooking(next == null ? null : new BookingShort(next.getId(), next.getBooker() != null ? next.getBooker().getId() : null));
+
+            dto.setLastBooking(last == null ? null :
+                    new BookingShort(last.getId(), last.getBooker() != null ? last.getBooker().getId() : null));
+            dto.setNextBooking(next == null ? null :
+                    new BookingShort(next.getId(), next.getBooker() != null ? next.getBooker().getId() : null));
         } else {
             dto.setLastBooking(null);
             dto.setNextBooking(null);
@@ -108,7 +114,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getByOwner(Long ownerId) {
         return items.findByOwnerId(ownerId).stream()
-                .map(i -> getById(ownerId, i.getId())) // заполнить last/next/comments
+                .map(i -> getById(ownerId, i.getId()))
                 .collect(Collectors.toList());
     }
 
@@ -123,7 +129,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto.CommentDto addComment(Long userId, Long itemId, CommentCreateDto dto) {
+    public CommentDto addComment(Long userId, Long itemId, CommentCreateDto dto) {
         User user = users.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Item item = items.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
@@ -141,12 +147,6 @@ public class ItemServiceImpl implements ItemService {
 
         c = comments.save(c);
 
-        return ItemDto.CommentDto.builder()
-                .id(c.getId())
-                .text(c.getText())
-                .authorName(c.getAuthor().getName())
-                .created(c.getCreated().toString().substring(0, 19))
-                .build();
+        return ItemMapper.toCommentDto(c);
     }
-
 }

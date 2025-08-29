@@ -9,9 +9,8 @@ public final class BookingMapper {
     }
 
     public static BookingDto toDto(Booking b) {
-        if (b == null) return null;
         BookingDto.BookerShortDto bookerShort = b.getBooker() == null ? null :
-                BookingDto.BookerShortDto.builder().id(b.getBooker().getId()).build();
+                BookingDto.BookerShortDto.builder().id(b.getBooker().getId()).name(b.getBooker().getName()).build();
         BookingDto.ItemShortDto itemShort = b.getItem() == null ? null :
                 BookingDto.ItemShortDto.builder().id(b.getItem().getId()).name(b.getItem().getName()).build();
         return BookingDto.builder()

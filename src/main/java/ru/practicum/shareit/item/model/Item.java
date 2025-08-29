@@ -19,7 +19,6 @@ public class Item {
     private Long id;
 
     @Column(nullable = false)
-    @NotNull
     private String name;
 
     @Column(columnDefinition = "TEXT")

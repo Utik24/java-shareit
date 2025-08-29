@@ -4,6 +4,7 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingStatus;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,4 +38,6 @@ public interface BookingRepository {
     List<Booking> findByOwnerAndStatus(Long ownerId, BookingStatus status);
 
     boolean existsByBookerFinishedApproved(Long userId, Long itemId, LocalDateTime now);
+
+    boolean existsOverlapping(Long itemId, LocalDateTime start, LocalDateTime end, Collection<BookingStatus> statuses);
 }

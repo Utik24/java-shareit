@@ -2,8 +2,6 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +18,7 @@ public class ItemDto {
     private BookingShort lastBooking;
     private BookingShort nextBooking;
 
-    private List<CommentDto> comments;
+    private java.util.List<CommentDto> comments;
 
     @Getter
     @Setter
@@ -30,17 +28,5 @@ public class ItemDto {
     public static class BookingShort {
         private Long id;
         private Long bookerId;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class CommentDto {
-        String created;
-        private Long id;
-        private String text;
-        private String authorName;
     }
 }
