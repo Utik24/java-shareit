@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemCreateDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto create(@RequestHeader(USER_HEADER) Long ownerId,
-                          @RequestBody ItemDto dto) {
+                          @Valid @RequestBody ItemCreateDto dto) {
         return service.create(ownerId, dto);
     }
 
