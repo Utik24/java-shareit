@@ -22,17 +22,27 @@ public class ErrorHandler {
                 ));
     }
 
-    @ExceptionHandler({ValidationException.class, DuplicateEmailException.class})
-    public ResponseEntity<ErrorResponse> handleValidation(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(
                         Instant.now(),
-                        HttpStatus.CONFLICT.value(),
-                        "CONFLICT",
+                        HttpStatus.BAD_REQUEST.value(),
+                        "Bad Request",
                         ex.getMessage()
                 ));
     }
 
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateEmailException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        Instant.now(),
+                        HttpStatus.CONFLICT.value(),
+                        "Conflict",
+                        ex.getMessage()
+                ));
+    }
 
     @ExceptionHandler(OwnershipException.class)
     public ResponseEntity<ErrorResponse> handleOwnership(OwnershipException ex) {
@@ -45,4 +55,25 @@ public class ErrorHandler {
                 ));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        Instant.now(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        "Bad Request",
+                        ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnknown(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(
+                        Instant.now(),
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "Internal Server Error",
+                        ex.getMessage()
+                ));
+    }
 }

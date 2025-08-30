@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking.dto;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import ru.practicum.shareit.booking.BookingStatus;
 
@@ -15,17 +14,37 @@ import java.time.LocalDateTime;
 public class BookingDto {
     private Long id;
 
-    @NotNull(message = "Дата начала бронирования обязательна")
-    @Future(message = "Дата начала должна быть в будущем")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime start;
 
-    @NotNull(message = "Дата окончания бронирования обязательна")
-    @Future(message = "Дата окончания должна быть в будущем")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime end;
 
-    @NotNull(message = "Идентификатор вещи обязателен")
-    private Long itemId;
-
-    private Long bookerId;
     private BookingStatus status;
+
+    private Long itemId;
+    private Long bookerId;
+
+    private BookerShortDto booker;
+    private ItemShortDto item;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class BookerShortDto {
+        private Long id;
+        private String name;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ItemShortDto {
+        private Long id;
+        private String name;
+    }
 }

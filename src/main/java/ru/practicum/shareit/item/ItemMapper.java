@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item;
 
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemCreateDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
@@ -16,12 +19,7 @@ public final class ItemMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
-                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .build();
-    }
-
-    public static Item fromDto(ItemDto dto) {
-        return fromDto(dto, null);
     }
 
     public static Item fromDto(ItemDto dto, User owner) {
@@ -32,6 +30,31 @@ public final class ItemMapper {
         }
         return Item.builder()
                 .id(dto.getId())
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .available(dto.getAvailable())
+                .owner(owner)
+                .request(req)
+                .build();
+    }
+
+    public static CommentDto toCommentDto(Comment c) {
+        if (c == null) return null;
+        return CommentDto.builder()
+                .id(c.getId())
+                .text(c.getText())
+                .authorName(c.getAuthor() != null ? c.getAuthor().getName() : null)
+                .created(c.getCreated())
+                .build();
+    }
+
+    public static Item fromCreateDto(ItemCreateDto dto, User owner) {
+        if (dto == null) return null;
+        ItemRequest req = null;
+        if (dto.getRequestId() != null) {
+            req = ItemRequest.builder().id(dto.getRequestId()).build();
+        }
+        return Item.builder()
                 .name(dto.getName())
                 .description(dto.getDescription())
                 .available(dto.getAvailable())
