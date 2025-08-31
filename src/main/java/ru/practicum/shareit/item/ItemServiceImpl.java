@@ -22,8 +22,8 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,19 +80,30 @@ public class ItemServiceImpl implements ItemService {
                     .filter(b -> b.getStatus() == BookingStatus.APPROVED)
                     .collect(Collectors.toList());
 
-            Booking last = relevant.stream()
-                    .filter(b -> !b.getStart().isAfter(now))
-                    .max(Comparator.comparing(Booking::getStart))
-                    .orElse(null);
-            Booking next = relevant.stream()
-                    .filter(b -> b.getStart().isAfter(now))
-                    .min(Comparator.comparing(Booking::getStart))
-                    .orElse(null);
+            Booking last = null;
+            Booking next = null;
 
-            dto.setLastBooking(last == null ? null :
-                    new BookingShort(last.getId(), last.getBooker() != null ? last.getBooker().getId() : null));
-            dto.setNextBooking(next == null ? null :
-                    new BookingShort(next.getId(), next.getBooker() != null ? next.getBooker().getId() : null));
+            List<Booking> bookList = bookingRepository.findByOwnerAndStatus(item.getOwner().getId(), BookingStatus.APPROVED)
+                    .stream()
+                    .filter(b -> b.getItem() != null && itemId.equals(b.getItem().getId()))
+                    .toList();
+
+            for (Booking b : bookList) {
+                if (b.getStart().isAfter(now)) {
+                    if (next == null || b.getStart().isBefore(next.getStart())) {
+                        next = b;
+                    }
+                } else {
+                    if (last == null || b.getStart().isAfter(last.getStart())) {
+                        last = b;
+                    }
+                }
+            }
+
+            dto.setLastBooking(last == null ? null : new BookingShort(last.getId(),
+                    last.getBooker() != null ? last.getBooker().getId() : null));
+            dto.setNextBooking(next == null ? null : new BookingShort(next.getId(),
+                    next.getBooker() != null ? next.getBooker().getId() : null));
         } else {
             dto.setLastBooking(null);
             dto.setNextBooking(null);
@@ -103,42 +114,56 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getByOwner(Long ownerId) {
-        var ownedItems = itemRepository.findByOwnerId(ownerId);
-        if (ownedItems.isEmpty()) return List.of();
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь " + ownerId + " не найден"));
 
-        var itemIds = ownedItems.stream().map(Item::getId).toList();
+        List<Item> ownerItems = itemRepository.findByOwnerId(ownerId);
+        if (ownerItems.isEmpty()) return List.of();
 
-        var commentsByItemId = commentRepository.findByItem_IdInOrderByCreatedDesc(itemIds).stream()
-                .collect(Collectors.groupingBy(c -> c.getItem().getId()));
+        List<Long> itemIds = ownerItems.stream()
+                .map(Item::getId)
+                .toList();
 
-        var approvedByItemId = bookingRepository.findByOwnerAndStatus(ownerId, BookingStatus.APPROVED).stream()
+        List<Booking> allApproved = bookingRepository.findByOwnerAndStatus(ownerId, BookingStatus.APPROVED);
+        Map<Long, List<Booking>> bookingsByItem = allApproved.stream()
+                .filter(b -> b.getItem() != null && b.getItem().getId() != null)
                 .collect(Collectors.groupingBy(b -> b.getItem().getId()));
 
-        var now = LocalDateTime.now();
 
-        return ownedItems.stream()
+        Map<Long, List<Comment>> commentsByItem = commentRepository.findByItem_IdInOrderByCreatedDesc(itemIds)
+                .stream()
+                .filter(c -> c.getItem() != null && c.getItem().getId() != null)
+                .collect(Collectors.groupingBy(c -> c.getItem().getId()));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        return ownerItems.stream()
                 .map(item -> {
-                    var dto = ItemMapper.toDto(item);
+                    ItemDto dto = ItemMapper.toDto(item);
 
-                    var cmts = commentsByItemId.getOrDefault(item.getId(), List.of());
-                    dto.setComments(cmts.stream().map(ItemMapper::toCommentDto).toList());
+                    List<CommentDto> commentDtos = commentsByItem.getOrDefault(item.getId(), List.of())
+                            .stream()
+                            .map(ItemMapper::toCommentDto)
+                            .toList();
+                    dto.setComments(commentDtos);
 
-                    var bookList = approvedByItemId.getOrDefault(item.getId(), List.of());
-                    Booking last = bookList.stream()
-                            .filter(b -> !b.getStart().isAfter(now))
-                            .max(Comparator.comparing(Booking::getStart))
-                            .orElse(null);
-                    Booking next = bookList.stream()
-                            .filter(b -> b.getStart().isAfter(now))
-                            .min(Comparator.comparing(Booking::getStart))
-                            .orElse(null);
-
+                    Booking last = null;
+                    Booking next = null;
+                    for (Booking b : bookingsByItem.getOrDefault(item.getId(), List.of())) {
+                        if (b.getStart().isAfter(now)) {
+                            if (next == null || b.getStart().isBefore(next.getStart())) {
+                                next = b;
+                            }
+                        } else {
+                            if (last == null || b.getStart().isAfter(last.getStart())) {
+                                last = b;
+                            }
+                        }
+                    }
                     dto.setLastBooking(last == null ? null :
-                            new ItemDto.BookingShort(last.getId(),
-                                    last.getBooker() != null ? last.getBooker().getId() : null));
+                            new ItemDto.BookingShort(last.getId(), last.getBooker() != null ? last.getBooker().getId() : null));
                     dto.setNextBooking(next == null ? null :
-                            new ItemDto.BookingShort(next.getId(),
-                                    next.getBooker() != null ? next.getBooker().getId() : null));
+                            new ItemDto.BookingShort(next.getId(), next.getBooker() != null ? next.getBooker().getId() : null));
 
                     return dto;
                 })

@@ -13,7 +13,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -87,17 +86,14 @@ public class BookingServiceImpl implements BookingService {
 
         LocalDateTime now = LocalDateTime.now();
         List<Booking> list = switch (state) {
-            case ALL      -> repo.findByOwnerId(ownerId);
-            case CURRENT  -> repo.findCurrentForOwner(ownerId, now);
-            case PAST     -> repo.findPastForOwner(ownerId, now);
-            case FUTURE   -> repo.findFutureForOwner(ownerId, now);
-            case WAITING  -> repo.findByOwnerAndStatus(ownerId, BookingStatus.WAITING);
+            case ALL -> repo.findByOwnerId(ownerId);
+            case CURRENT -> repo.findCurrentForOwner(ownerId, now);
+            case PAST -> repo.findPastForOwner(ownerId, now);
+            case FUTURE -> repo.findFutureForOwner(ownerId, now);
+            case WAITING -> repo.findByOwnerAndStatus(ownerId, BookingStatus.WAITING);
             case REJECTED -> repo.findByOwnerAndStatus(ownerId, BookingStatus.REJECTED);
         };
-        return list.stream()
-                .sorted(Comparator.comparing(Booking::getStart).reversed())
-                .map(BookingMapper::toDto)
-                .toList();
+        return list.stream().map(BookingMapper::toDto).toList();
     }
 
     @Override
@@ -105,17 +101,14 @@ public class BookingServiceImpl implements BookingService {
         users.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         LocalDateTime now = LocalDateTime.now();
         List<Booking> list = switch (state) {
-            case ALL      -> repo.findByBookerId(userId);
-            case CURRENT  -> repo.findCurrentForBooker(userId, now);
-            case PAST     -> repo.findPastForBooker(userId, now);
-            case FUTURE   -> repo.findFutureForBooker(userId, now);
-            case WAITING  -> repo.findByBookerAndStatus(userId, BookingStatus.WAITING);
+            case ALL -> repo.findByBookerId(userId);
+            case CURRENT -> repo.findCurrentForBooker(userId, now);
+            case PAST -> repo.findPastForBooker(userId, now);
+            case FUTURE -> repo.findFutureForBooker(userId, now);
+            case WAITING -> repo.findByBookerAndStatus(userId, BookingStatus.WAITING);
             case REJECTED -> repo.findByBookerAndStatus(userId, BookingStatus.REJECTED);
         };
-        return list.stream()
-                .sorted(Comparator.comparing(Booking::getStart).reversed())
-                .map(BookingMapper::toDto)
-                .toList();
+        return list.stream().map(BookingMapper::toDto).toList();
     }
 
 }
