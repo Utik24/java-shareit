@@ -1,0 +1,98 @@
+package ru.practicum.shareit.booking.storage;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingStatus;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+@RequiredArgsConstructor
+public class JpaBookingRepository implements BookingRepository {
+
+    private final SpringDataBookingJpa jpa;
+
+    @Override
+    public Booking save(Booking booking) {
+        return jpa.save(booking);
+    }
+
+    @Override
+    public Booking update(Booking booking) {
+        return jpa.save(booking);
+    }
+
+    @Override
+    public Optional<Booking> findById(Long id) {
+        return jpa.findById(id);
+    }
+
+    @Override
+    public List<Booking> findAll() {
+        return jpa.findAll();
+    }
+
+    @Override
+    public List<Booking> findByBookerId(Long bookerId) {
+        return jpa.findByBooker_IdOrderByStartDesc(bookerId);
+    }
+
+    @Override
+    public List<Booking> findByOwnerId(Long ownerId) {
+        return jpa.findByItem_Owner_IdOrderByStartDesc(ownerId);
+    }
+
+    @Override
+    public List<Booking> findCurrentForBooker(Long userId, LocalDateTime now) {
+        return jpa.findByBooker_IdAndStartLessThanEqualAndEndGreaterThanEqualOrderByStartDesc(userId, now, now);
+    }
+
+    @Override
+    public List<Booking> findPastForBooker(Long userId, LocalDateTime now) {
+        return jpa.findByBooker_IdAndEndBeforeOrderByStartDesc(userId, now);
+    }
+
+    @Override
+    public List<Booking> findFutureForBooker(Long userId, LocalDateTime now) {
+        return jpa.findByBooker_IdAndStartAfterOrderByStartDesc(userId, now);
+    }
+
+    @Override
+    public List<Booking> findByBookerAndStatus(Long userId, BookingStatus status) {
+        return jpa.findByBooker_IdAndStatusOrderByStartDesc(userId, status);
+    }
+
+    @Override
+    public List<Booking> findCurrentForOwner(Long ownerId, LocalDateTime now) {
+        return jpa.findByItem_Owner_IdAndStartLessThanEqualAndEndGreaterThanEqualOrderByStartDesc(ownerId, now, now);
+    }
+
+    @Override
+    public List<Booking> findPastForOwner(Long ownerId, LocalDateTime now) {
+        return jpa.findByItem_Owner_IdAndEndBeforeOrderByStartDesc(ownerId, now);
+    }
+
+    @Override
+    public List<Booking> findFutureForOwner(Long ownerId, LocalDateTime now) {
+        return jpa.findByItem_Owner_IdAndStartAfterOrderByStartDesc(ownerId, now);
+    }
+
+    @Override
+    public List<Booking> findByOwnerAndStatus(Long ownerId, BookingStatus status) {
+        return jpa.findByItem_Owner_IdAndStatusOrderByStartDesc(ownerId, status);
+    }
+
+    @Override
+    public boolean existsByBookerFinishedApproved(Long userId, Long itemId, LocalDateTime now) {
+        return jpa.existsByBooker_IdAndItem_IdAndStatusAndEndBefore(userId, itemId, BookingStatus.APPROVED, now);
+    }
+
+    @Override
+    public boolean existsOverlapping(Long itemId, LocalDateTime start, LocalDateTime end, Collection<BookingStatus> statuses) {
+        return jpa.existsByItem_IdAndStatusInAndStartLessThanAndEndGreaterThan(itemId, statuses, end, start);
+    }
+}

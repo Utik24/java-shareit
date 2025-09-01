@@ -12,7 +12,7 @@ import static ru.practicum.shareit.HasUserHeader.USER_HEADER;
 @RestController
 @RequestMapping("/bookings")
 @RequiredArgsConstructor
-public class BookingController  {
+public class BookingController {
 
     private final BookingService service;
 
@@ -22,7 +22,9 @@ public class BookingController  {
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto approve(@RequestHeader(USER_HEADER) Long ownerId, @PathVariable Long bookingId, @RequestParam("approved") boolean approved) {
+    public BookingDto approve(@RequestHeader(USER_HEADER) Long ownerId,
+                              @PathVariable Long bookingId,
+                              @RequestParam boolean approved) {
         return service.approve(ownerId, bookingId, approved);
     }
 
@@ -32,12 +34,16 @@ public class BookingController  {
     }
 
     @GetMapping
-    public List<BookingDto> getByBooker(@RequestHeader(USER_HEADER) Long userId) {
-        return service.getByBooker(userId);
+    public List<BookingDto> getByBooker(@RequestHeader(USER_HEADER) Long userId,
+                                        @RequestParam(defaultValue = "ALL") String state) {
+        BookingState stateParam = BookingState.from(state);
+        return service.getByBooker(userId, stateParam);
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getByOwner(@RequestHeader(USER_HEADER) Long ownerId) {
-        return service.getByOwner(ownerId);
+    public List<BookingDto> getByOwner(@RequestHeader(USER_HEADER) Long ownerId,
+                                       @RequestParam(defaultValue = "ALL") String state) {
+        BookingState stateParam = BookingState.from(state);
+        return service.getByOwner(ownerId, stateParam);
     }
 }

@@ -8,15 +8,20 @@ public final class BookingMapper {
     private BookingMapper() {
     }
 
-    public static BookingDto toDto(Booking booking) {
-        if (booking == null) return null;
+    public static BookingDto toDto(Booking b) {
+        BookingDto.BookerShortDto bookerShort = b.getBooker() == null ? null :
+                BookingDto.BookerShortDto.builder().id(b.getBooker().getId()).name(b.getBooker().getName()).build();
+        BookingDto.ItemShortDto itemShort = b.getItem() == null ? null :
+                BookingDto.ItemShortDto.builder().id(b.getItem().getId()).name(b.getItem().getName()).build();
         return BookingDto.builder()
-                .id(booking.getId())
-                .start(booking.getStart())
-                .end(booking.getEnd())
-                .itemId(booking.getItem() != null ? booking.getItem().getId() : null)
-                .bookerId(booking.getBooker() != null ? booking.getBooker().getId() : null)
-                .status(booking.getStatus())
+                .id(b.getId())
+                .start(b.getStart())
+                .end(b.getEnd())
+                .status(b.getStatus())
+                .itemId(b.getItem() != null ? b.getItem().getId() : null)
+                .bookerId(b.getBooker() != null ? b.getBooker().getId() : null)
+                .booker(bookerShort)
+                .item(itemShort)
                 .build();
     }
 
