@@ -24,4 +24,5 @@ public interface ItemService {
 
     List<Item> getItemsByRequestId(Long requestId);
 
+    List<Item> getItemsByRequestIds(List<Long> requestIds);
 }

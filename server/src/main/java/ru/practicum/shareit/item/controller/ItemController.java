@@ -26,14 +26,12 @@ public class ItemController {
 
 
     @PatchMapping("/{itemId}")
-    @ResponseStatus(HttpStatus.OK)
     public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
                           @RequestBody ItemPatchDto itemPatchDto) {
         return itemService.update(userId, itemId, itemPatchDto);
     }
 
     @GetMapping("/{itemId}")
-    @ResponseStatus(HttpStatus.OK)
     public ItemDto getById(@PathVariable Long itemId) {
         return itemService.getById(itemId);
     }

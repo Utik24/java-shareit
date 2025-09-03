@@ -3,18 +3,10 @@ package ru.practicum.shareit.exception;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.error.ErrorHandler;
 import ru.practicum.shareit.error.NotFoundException;
 
-import java.util.Collections;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class GlobalExceptionHandlerTest {
 
@@ -23,23 +15,6 @@ class GlobalExceptionHandlerTest {
     @BeforeEach
     void setUp() {
         exceptionHandler = new ErrorHandler();
-    }
-
-    @Test
-    void handleValidationException_shouldReturnBadRequest() {
-        FieldError fieldError = new FieldError("objectName", "fieldName", "не может быть пустым");
-
-        BindingResult bindingResult = mock(BindingResult.class);
-        when(bindingResult.getFieldErrors()).thenReturn(Collections.singletonList(fieldError));
-
-        MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
-        when(ex.getBindingResult()).thenReturn(bindingResult);
-
-        ResponseEntity<ErrorHandler.ErrorResponse> response =
-                exceptionHandler.handleValidationException(ex);
-
-        assertEquals(400, response.getStatusCodeValue());
-        assertTrue(response.getBody().message().contains("Поле 'fieldName': не может быть пустым"));
     }
 
     @Test

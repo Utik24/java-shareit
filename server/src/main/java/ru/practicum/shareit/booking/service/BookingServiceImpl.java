@@ -12,8 +12,7 @@ import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.error.AccessDeniedException;
 import ru.practicum.shareit.error.NotFoundException;
 import ru.practicum.shareit.item.storage.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,13 +22,14 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
     @Transactional
     @Override
     public BookingDto create(long userId, BookingCreateDto bookingCreateDto) {
-        var booker = UserMapper.fromDto(userService.getById(userId));
+        var booker = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
 
         var item = itemRepository.findById(bookingCreateDto.itemId())
                 .orElseThrow(() -> new NotFoundException("Предмет не найден"));
@@ -77,7 +77,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getByBooker(Long userId, String state) {
-        userService.getById(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
 
         return bookingRepository.findBookingsByUserAndState(userId, false, state)
                 .stream()
@@ -87,7 +88,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getByOwner(Long userId, String state) {
-        userService.getById(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
 
         return bookingRepository.findBookingsByUserAndState(userId, true, state)
                 .stream()

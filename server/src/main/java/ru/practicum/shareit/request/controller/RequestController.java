@@ -9,7 +9,7 @@ import ru.practicum.shareit.request.service.RequestService;
 
 import java.util.List;
 
-import static ru.practicum.shareit.HasUserHeader.USER_HEADER;
+import static ru.practicum.shareit.UserHeader.USER_HEADER;
 
 @RestController
 @RequestMapping("/requests")
@@ -26,19 +26,16 @@ public class RequestController {
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     List<RequestWithItems> getRequests(@RequestHeader(USER_HEADER) Long userId) {
         return requestService.getRequests(userId);
     }
 
     @GetMapping("/all")
-    @ResponseStatus(HttpStatus.OK)
     List<RequestDto> getAllRequests() {
         return requestService.getAllRequests();
     }
 
     @GetMapping("{requestId}")
-    @ResponseStatus(HttpStatus.OK)
     RequestWithItems getRequest(@PathVariable("requestId") Long requestId) {
         return requestService.getRequestById(requestId);
     }

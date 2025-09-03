@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.error.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemRequestDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestWithItems;
@@ -15,6 +16,8 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +36,15 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestWithItems> getRequests(Long userId) {
-        return requestRepository.findByRequestorIdOrderByCreatedDesc(userId).stream()
+        List<Request> requests = requestRepository.findByRequestorIdOrderByCreatedDesc(userId);
+        List<Long> requestIds = requests.stream().map(Request::getId).toList();
+
+        Map<Long, List<Item>> itemsByRequest = itemService.getItemsByRequestIds(requestIds).stream()
+                .collect(Collectors.groupingBy(Item::getRequestId));
+
+        return requests.stream()
                 .map(request -> {
-                    List<ItemRequestDto> items = itemService.getItemsByRequestId(request.getId()).stream()
+                    List<ItemRequestDto> items = itemsByRequest.getOrDefault(request.getId(), List.of()).stream()
                             .map(ItemMapper::mapToItemRequestDto)
                             .toList();
                     return RequestMapper.mapToItemRequestWithItems(request, items);

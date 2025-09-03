@@ -21,13 +21,11 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto update(@PathVariable Long id, @RequestBody UserPatchDto userPatchDto) {
         return service.update(id, userPatchDto);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto getById(@PathVariable Long id) {
         return service.getById(id);
     }

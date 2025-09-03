@@ -10,7 +10,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BookingMapperTest {
 

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.error.AccessDeniedException;
 import ru.practicum.shareit.error.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -17,9 +17,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -35,13 +34,14 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final CommentRepository commentRepository;
-    private final UserService userService;
-    private final BookingService bookingService;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
         log.info(itemDto.toString());
-        User user = UserMapper.fromDto(userService.getById(userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
 
         Item item = ItemMapper.fromDto(itemDto);
         item.setOwner(user);
@@ -79,7 +79,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getByOwner(Long ownerId) {
         List<Item> items = itemRepository.findByOwnerId(ownerId);
 
-        List<Booking> bookings = bookingService.findAllByItemIdIn(
+        List<Booking> bookings = bookingRepository.findAllByItemIdIn(
                 items.stream().map(Item::getId).toList()
         );
 
@@ -128,13 +128,14 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
 
-        Booking booking = bookingService.findByBookerIdAndItemId(userId, itemId);
+        Booking booking = bookingRepository.findByBookerIdAndItemId(userId, itemId);
 
         if (!booking.getStatus().equals(BookingStatus.APPROVED) || LocalDateTime.now().isBefore(booking.getEnd())) {
             throw new AccessDeniedException("Вы не можете оставить комментарий");
         }
 
-        var user = UserMapper.fromDto(userService.getById(userId));
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
         var item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Предмет отсутствует"));
 
         Comment comment = Comment.builder()
@@ -151,5 +152,10 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> getItemsByRequestId(Long requestId) {
         return itemRepository.findItemsByRequestId(requestId).stream()
                 .toList();
+    }
+
+    @Override
+    public List<Item> getItemsByRequestIds(List<Long> requestIds) {
+        return itemRepository.findItemsByRequestIds(requestIds);
     }
 }

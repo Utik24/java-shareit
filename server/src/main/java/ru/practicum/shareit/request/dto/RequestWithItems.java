@@ -7,5 +7,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Builder
-public record RequestWithItems(Long id, String description, Timestamp created, List<ItemRequestDto> items) {
+public record RequestWithItems(Long id,
+                               String description,
+                               Timestamp created,
+                               List<ItemRequestDto> items) {
 }
