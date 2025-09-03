@@ -14,10 +14,8 @@ import ru.practicum.shareit.error.AccessDeniedException;
 import ru.practicum.shareit.error.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +30,7 @@ class BookingServiceTest {
     private BookingRepository bookingRepository;
 
     @Mock
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Mock
     private ItemRepository itemRepository;
@@ -42,8 +40,6 @@ class BookingServiceTest {
 
     private User owner;
     private User booker;
-    private UserDto ownerDto;
-    private UserDto bookerDto;
     private Item item;
     private Booking booking;
     private BookingCreateDto bookingCreateDto;
@@ -63,9 +59,6 @@ class BookingServiceTest {
                 .name("Aleksandr")
                 .email("Dolsa.broadstafF@gmail.com")
                 .build();
-
-        ownerDto = UserMapper.fromDto(owner);
-        bookerDto = UserMapper.fromDto(booker);
 
         item = Item.builder()
                 .id(10L)
@@ -93,7 +86,7 @@ class BookingServiceTest {
 
     @Test
     void createBooking() {
-        when(userService.getById(booker.getId())).thenReturn(bookerDto);
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
         when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
 
@@ -106,7 +99,7 @@ class BookingServiceTest {
 
     @Test
     void createBookingNotFound() {
-        when(userService.getById(booker.getId())).thenReturn(bookerDto);
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
         when(itemRepository.findById(item.getId())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
@@ -116,7 +109,7 @@ class BookingServiceTest {
     @Test
     void createBookingNotAvailable() {
         item.setAvailable(false);
-        when(userService.getById(booker.getId())).thenReturn(bookerDto);
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
         when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
 
         assertThrows(AccessDeniedException.class,
@@ -176,26 +169,26 @@ class BookingServiceTest {
 
     @Test
     void getBookings() {
-        when(userService.getById(booker.getId())).thenReturn(bookerDto);
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
         when(bookingRepository.findBookingsByUserAndState(booker.getId(), false, "ALL"))
                 .thenReturn(List.of(booking));
 
         var list = bookingService.getByBooker(booker.getId(), "ALL");
 
         assertEquals(1, list.size());
-        verify(userService).getById(booker.getId());
+        verify(userRepository).findById(booker.getId());
     }
 
     @Test
     void getBookingsForOwner() {
-        when(userService.getById(owner.getId())).thenReturn(ownerDto);
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
         when(bookingRepository.findBookingsByUserAndState(owner.getId(), true, "ALL"))
                 .thenReturn(List.of(booking));
 
         var list = bookingService.getByOwner(owner.getId(), "ALL");
 
         assertEquals(1, list.size());
-        verify(userService).getById(owner.getId());
+        verify(userRepository).findById(owner.getId());
     }
 
     @Test

@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.error.AccessDeniedException;
 import ru.practicum.shareit.error.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -20,7 +20,7 @@ import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,9 +40,9 @@ class ItemServiceTest {
     @Mock
     private CommentRepository commentRepository;
     @Mock
-    private UserService userService;
+    private UserRepository userRepository;
     @Mock
-    private BookingService bookingService;
+    private BookingRepository bookingRepository;
 
     private Item item;
     private User user;
@@ -76,7 +76,7 @@ class ItemServiceTest {
 
     @Test
     void addItem() {
-        when(userService.getById(1L)).thenReturn(userDto);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(itemRepository.save(any())).thenReturn(item);
 
         ItemDto result = itemService.create(1L, itemDto);
@@ -176,8 +176,8 @@ class ItemServiceTest {
                 .booker(user)
                 .build();
 
-        when(bookingService.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
-        when(userService.getById(1L)).thenReturn(userDto);
+        when(bookingRepository.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
         Comment comment = Comment.builder().id(1L).comment("Норм").author(user).item(item).build();
         when(commentRepository.save(any())).thenReturn(comment);
@@ -198,7 +198,7 @@ class ItemServiceTest {
                 .booker(user)
                 .build();
 
-        when(bookingService.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
+        when(bookingRepository.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
 
         assertThrows(AccessDeniedException.class,
                 () -> itemService.addComment(1L, 1L, new CommentDto(null, "text", null, null)));
@@ -214,7 +214,7 @@ class ItemServiceTest {
                 .booker(user)
                 .build();
 
-        when(bookingService.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
+        when(bookingRepository.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
 
         assertThrows(AccessDeniedException.class,
                 () -> itemService.addComment(1L, 1L, new CommentDto(null, "text", null, null)));
@@ -230,8 +230,8 @@ class ItemServiceTest {
                 .booker(user)
                 .build();
 
-        when(bookingService.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
-        when(userService.getById(1L)).thenReturn(userDto);
+        when(bookingRepository.findByBookerIdAndItemId(1L, 1L)).thenReturn(booking);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(itemRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
@@ -277,7 +277,7 @@ class ItemServiceTest {
                 .status(BookingStatus.APPROVED)
                 .build();
 
-        when(bookingService.findAllByItemIdIn(List.of(1L, 2L))).thenReturn(List.of(past, future, otherFuture));
+        when(bookingRepository.findAllByItemIdIn(List.of(1L, 2L))).thenReturn(List.of(past, future, otherFuture));
 
         var result = itemService.getByOwner(1L);
 
